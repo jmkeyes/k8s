@@ -1,0 +1,5 @@
+---
+- name: state | Ensure SELinux state is {{ selinux_state }} with policy {{ selinux_policy | default('N/A') }}
+  selinux:
+    policy: "{{ selinux_policy | default(omit) }}"
+    state: "{{ selinux_state }}"

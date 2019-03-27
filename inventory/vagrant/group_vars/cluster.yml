@@ -1,0 +1,8 @@
+---
+# Provide some Vagrant-specific integrations.
+ansible_ssh_private_key_file: "{{ playbook_dir }}/.vagrant/machines/{{ inventory_hostname }}/virtualbox/private_key"
+ansible_ssh_host: 127.0.0.1
+ansible_ssh_user: vagrant
+
+# Always sudo on remote machines.
+ansible_become: true

@@ -1,0 +1,17 @@
+---
+- name: repository | Ensure the Kubernetes YUM repository is available
+  yum_repository:
+    name: Kubernetes
+    description: Kubernetes YUM repository
+    baseurl: https://packages.cloud.google.com/yum/repos/kubernetes-el7-x86_64
+    repo_gpgcheck: yes
+    gpgcheck: yes
+    gpgkey:
+      - https://packages.cloud.google.com/yum/doc/rpm-package-key.gpg
+      - https://packages.cloud.google.com/yum/doc/yum-key.gpg
+
+- name: install | Ensure Kubernetes {{ kubernetes_version}} packages are installed
+  package: name={{ kubernetes_packages }} state=installed
+
+- name: service | Ensure Kubelet service is running
+  service: name=kubelet state=started enabled=yes

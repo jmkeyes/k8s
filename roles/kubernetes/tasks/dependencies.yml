@@ -1,0 +1,28 @@
+---
+- name: sysctls | Ensure Kubernetes-specific sysctls are set
+  sysctl: name={{ item.name }} value={{ item.value }} state=present
+  loop:
+    - { name: net.bridge.bridge-nf-call-iptables,  value: 1 }
+    - { name: net.bridge.bridge-nf-call-ip6tables, value: 1 }
+
+- name: swap | Ensure swap has been disabled
+  command: swapoff -a
+  changed_when: false
+
+- name: swap | Ensure swap is absent from /etc/fstab
+  mount:
+    state: absent
+    fstype: swap
+    name: none
+
+- name: modules | Ensure the 'br_netfilter' kernel module is loaded
+  modprobe:
+    name: br_netfilter
+    state: present
+
+- name: modules | Ensure the 'br_netfilter' kernel module loads at boot
+  copy:
+    dest: /etc/modules-load.d/k8s.conf
+    content: 'br_netfilter'
+    owner: 'root'
+    group: 'root'

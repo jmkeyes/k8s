@@ -1,0 +1,10 @@
+---
+# Ensure all dependencies are met first.
+- import_tasks: "dependencies.yml"
+
+# Ensure common components are installed.
+- import_tasks: "common.yml"
+
+# Ensure we deploy a control plane or worker node.
+- when: mode in ['control_plane', 'worker']
+  import_tasks: "{{ mode }}.yml"

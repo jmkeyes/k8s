@@ -1,0 +1,2 @@
+# Skip local Vagrant stuff.
+.vagrant/

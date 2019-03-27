@@ -1,0 +1,12 @@
+---
+- name: repository | Ensure the Docker repository is provided
+  get_url:
+    url: https://download.docker.com/linux/centos/docker-ce.repo
+    dest: /etc/yum.repos.d/docker-ce.repo
+    mode: 0644
+
+- name: install | Ensure Docker {{ docker_version }} package is installed
+  package: name={{ docker_package }} state=installed
+
+- name: service | Ensure Docker service is running
+  service: name={{ docker_service }} state=started enabled=yes

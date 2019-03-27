@@ -1,0 +1,23 @@
+---
+- name: Ensure control machine is configured
+  gather_facts: no
+  hosts: control
+  roles:
+    - ansible
+
+- name: Ensure all cluster nodes are provisioned
+  hosts: cluster
+  roles:
+    - common
+    - selinux
+    - docker
+
+- name: Ensure control plane nodes are provisioned
+  hosts: control-plane
+  roles:
+    - { role: kubernetes, mode: 'control_plane' }
+
+- name: Ensure worker nodes are provisioned
+  hosts: workers
+  roles:
+    - { role: kubernetes, mode: 'worker' }
