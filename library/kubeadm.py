@@ -6,6 +6,8 @@ import yaml
 
 from ansible.module_utils.basic import AnsibleModule
 
+# https://github.com/kubernetes-sigs/kubespray/blob/master/roles/kubernetes/kubeadm/tasks/main.yml
+
 class KubeAdm(object):
     STATES = ['initialized', 'joined', 'reset']
 
