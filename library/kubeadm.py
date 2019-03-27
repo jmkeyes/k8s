@@ -17,6 +17,12 @@ class KubeAdm(object):
         command = [self.kubeadm] + list(arguments)
         return self.module.run_command(command)
 
+    # 'kubeadm version -o short' -> "v1.14.0"
+    def version(self):
+        command = ['version', '-o', 'short']
+        output = self._kubeadm(command)[1]
+        return output.splitlines()[0]
+
     def _get_init_configuration(self):
         output = None
 
