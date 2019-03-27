@@ -1,0 +1,43 @@
+---
+- name: Set up the control plane
+  hosts: control-plane
+  tasks:
+    - name: Bootstrap a master node from an inline config
+      register: control_plane
+      kubeadm:
+        state: initialized
+        # XXX: Bootstrap token should be automatically generated.
+        #bootstrap_token: abcdef.0123456789abcdef
+        # XXX: Kubernetes version is optional; can be 'vN.NN.N' or 'latest'.
+        #kubernetes_version: v1.14.0
+        # XXX: These are only necessary when overriding defaults.
+        #image_repository: k8s.gcr.io
+        #pod_network_cidr: 10.92.0.0/20
+        #service_cidr: 10.96.0.0/22
+        #service_dns_domain: cluster.local
+        # XXX: Don't provide cri_socket; select it from "container runtime".
+        #cri_socket: /var/run/dockershim.sock
+
+- name: Set up the worker nodes
+  hosts: workers
+  tasks:
+    - name: Join a worker node to the control plane
+      kubeadm:
+        state: joined
+        # XXX: Mandatory for 'state=joined'.
+        #control_plane: 'k8s-master-0.example.com:6443'
+        # XXX: Token is mandatory for 'state=joined'.
+        #bootstrap_token: abcdef.0123456789abcdef
+        # XXX: Default to 'true'.
+        #ca_verify: true
+        # XXX: Must be supplied unless 'ca_verify: false'.
+        #ca_cert_hash:
+        #  - 'sha256:XXXX...'
+        # XXX: Don't provide cri_socket; select it from "container runtime".
+        #cri_socket: /var/run/dockershim.sock
+
+- name: Tear down the entire cluster
+  hosts: cluster
+  tasks:
+    - name: Tear down all control plane and worker nodes
+      kubeadm: state=reset
