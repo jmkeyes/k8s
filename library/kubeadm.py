@@ -23,6 +23,38 @@ class KubeAdm(object):
         output = self._kubeadm(command)[1]
         return output.splitlines()[0]
 
+    def _init_preflight_checks(self, ignore=[]):
+        command = ['init', 'phase', 'preflight']
+
+        # If we had to ignore some checks, inject them.
+        if len(ignore) > 0:
+            flag = '--ignore-preflight-checks={}'.format(','.join(ignore))
+            command.append(flag)
+
+        # Actually execute the preflight check(s) and return stderr.
+        _, _, err = self._kubeadm(command)
+
+        # Compile a regexp to match warnings and errors.
+        pattern = re.compile('^\\t\[(WARNING|ERROR) (\w+)]: (.*)$')
+
+        # Try to match the regex against the input lines.
+        candidates = [pattern.match(line) for line in err.splitlines()]
+
+        # Get a list of 3-tuples for each matched candidate.
+        matches = [m.group(1, 2, 3) for m in candidates if m != None]
+
+        # Extract all warnings from the list of matches.
+        warnings = filter(lambda m: m[0] == 'WARNING', matches)
+
+        # Extract all errors from the list of matches.
+        errors = filter(lambda m: m[0] == 'ERROR', matches)
+
+        # Extract the useful parts of the matches.
+        useful = lambda m: "({}) {}".format(m[1], m[2])
+
+        # Return them to the caller.
+        return map(useful, warnings), map(useful, errors)
+
     def _get_init_configuration(self):
         output = None
 
@@ -38,6 +70,18 @@ class KubeAdm(object):
         return yaml.safe_load_all(output)
 
     def init(self):
+        # kubeadm init phase preflight [--ignore-preflight-checks=A,B,C]
+        # XXX: This also pulls in docker images; repository can only be overridden by YAML.
+        warnings, errors = self._init_preflight_checks()
+
+        # Display any warnings shown from preflight checks
+        for warning in warnings:
+            self.module.warn(warning)
+
+        # Fail the module immediately if there are errors.
+        if len(errors) > 0:
+            self.module.fail_json(msg='kubeadm failed preflight checks', errors=errors)
+
         init_config, cluster_config = self._get_init_configuration()
 
         self.module.warn('InitConfiguration:\n{}'.format(init_config))
